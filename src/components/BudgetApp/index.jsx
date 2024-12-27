@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
+import Button from '../ui/button.jsx';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 import CategoryList from './CategoryList';
 import ChartSection from './ChartSection';
 import Footer from './Footer';
@@ -11,7 +22,6 @@ import EditTransactionModal from './EditTransactionModal';
 import { budgetApi } from '../../services/api';
 
 const BudgetApp = () => {
-  const [selectedDate, setSelectedDate] = useState('November 2024');
   const [expandedCategories, setExpandedCategories] = useState(['Fixed Expenses']);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [modalType, setModalType] = useState('category');
@@ -21,6 +31,14 @@ const BudgetApp = () => {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [categories, setCategories] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+
+
+  const getCurrentMonthYear = () => {
+    const date = new Date();
+    return `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+  };
+  const [dates, setDates] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(getCurrentMonthYear());
 
   // Business logic functions
   const toggleCategory = (category) => {
@@ -163,22 +181,60 @@ const BudgetApp = () => {
   }));
 
   useEffect(() => {
+    const currentDate = new Date();
+    const monthsList = [];
+
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      const monthYear = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+      monthsList.push(monthYear);
+    }
+
+    setDates(monthsList);
+  }, [selectedDate]);
+
+  useEffect(() => {
     const [month, year] = selectedDate.split(' ');
+    console.log('Loading budget data for:', month, year);
     loadBudgetData(year, month);
   }, [selectedDate]);
 
+  const totals = {
+    budget: Object.values(categories).reduce((sum, cat) => sum + cat.budget, 0),
+    spending: Object.values(categories).reduce((sum, cat) =>
+      sum + cat.items.reduce((subSum, item) => subSum + item.spending, 0), 0
+    )
+  };
+
+
   return (
     <div className="flex flex-col h-screen">
-      <Header
-        selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
-        openModal={openModal}
-      />
-      <main className="flex-1 flex p-6 gap-6">
-        {isLoading ? (
-          <LoadingState />
-        ) : (
-          <>
+      {/* Header */}
+      <div className="border-b p-4 flex justify-between items-center">
+        <h1 className="font-bold text-xl">Budget Dashboard</h1>
+        <div className="flex items-center gap-4">
+          <select
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="border rounded p-2"
+          >
+            {dates.map(date => (
+              <option key={date} value={date}>{date}</option>
+            ))}
+          </select>
+          <div className="flex gap-2">
+            <Button onClick={() => openModal('category')} className="bg-blue-500 text-white">
+              Add Category
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 grid grid-cols-3 gap-6 p-6">
+        {/* Categories and Transactions List */}
+        <div className="col-span-2">
+          <div className="bg-white rounded-lg shadow">
             <CategoryList
               categories={categories}
               expandedCategories={expandedCategories}
@@ -188,14 +244,50 @@ const BudgetApp = () => {
               handleDeleteSubcategory={handleDeleteSubcategory}
               handleEditSubcategory={setEditingSubcategory}
               onAddTransaction={setAddingTransactionTo}
-              onEditTransaction={setEditingTransaction}
-              onDeleteTransaction={handleDeleteTransaction}
             />
-            <ChartSection chartData={chartData} />
-          </>
-        )}
-      </main>
-      <Footer categories={categories} />
+          </div>
+        </div>
+
+        {/* Summary and Charts */}
+        <div className="space-y-4">
+          {/* Summary Cards */}
+          <div className="grid gap-4">
+            <div className="border rounded-lg p-4 bg-blue-50">
+              <h3 className="text-sm text-gray-600">Total Budget</h3>
+              <p className="text-2xl font-bold text-blue-600">
+                ${totals.budget.toFixed(2)}
+              </p>
+            </div>
+            <div className={`border rounded-lg p-4 ${totals.spending > totals.budget ? 'bg-red-50' : 'bg-green-50'
+              }`}>
+              <h3 className="text-sm text-gray-600">Total Spending</h3>
+              <p className={`text-2xl font-bold ${totals.spending > totals.budget ? 'text-red-600' : 'text-green-600'
+                }`}>
+                ${totals.spending.toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div className="border rounded-lg p-4 bg-white">
+            <h3 className="font-bold mb-4">Budget Overview</h3>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `$${value}`} />
+                  <Legend />
+                  <Bar dataKey="Budget" fill="#4ade80" />
+                  <Bar dataKey="Spending" fill="#fca5a5" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <CategoryModal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}

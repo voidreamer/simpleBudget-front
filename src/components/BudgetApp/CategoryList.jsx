@@ -12,32 +12,28 @@ const CategoryList = ({
   handleDeleteCategory,
   handleDeleteSubcategory,
   handleEditSubcategory,
-  onAddTransaction,
-  onEditTransaction,
-  onDeleteTransaction
+  onAddTransaction
 }) => {
   return (
-    <div className="w-1/2 bg-white rounded-lg shadow">
-      <div className="p-4">
-        <h2 className="text-xl font-semibold mb-4">Categories</h2>
-        <div className="space-y-2">
-          {Object.entries(categories).map(([categoryName, categoryData]) => (
-            <CategoryItem
-              key={categoryName}
-              categoryName={categoryName}
-              categoryData={categoryData}
-              isExpanded={expandedCategories.includes(categoryName)}
-              onToggle={() => toggleCategory(categoryName)}
-              onAddSubcategory={() => openModal('subcategory', { id: categoryData.id })}
-              onDeleteCategory={() => handleDeleteCategory(categoryData.id)}
-              onDeleteSubcategory={handleDeleteSubcategory}
-              onEditSubcategory={handleEditSubcategory}
-              onAddTransaction={onAddTransaction}
-              onEditTransaction={onEditTransaction}
-              onDeleteTransaction={onDeleteTransaction}
-            />
-          ))}
-        </div>
+    <div className="h-full">
+      <div className="p-4 border-b">
+        <h2 className="text-lg font-semibold">Categories</h2>
+      </div>
+      <div className="p-4 space-y-4">
+        {Object.entries(categories).map(([categoryName, categoryData]) => (
+          <CategoryItem
+            key={categoryName}
+            categoryName={categoryName}
+            categoryData={categoryData}
+            isExpanded={expandedCategories.includes(categoryName)}
+            onToggle={() => toggleCategory(categoryName)}
+            onAddSubcategory={() => openModal('subcategory', { id: categoryData.id, name: categoryName })}
+            onDeleteCategory={() => handleDeleteCategory(categoryData.id)}
+            onDeleteSubcategory={handleDeleteSubcategory}
+            onEditSubcategory={handleEditSubcategory}
+            onAddTransaction={onAddTransaction}
+          />
+        ))}
       </div>
     </div>
   );
@@ -52,42 +48,53 @@ const CategoryItem = ({
   onDeleteCategory,
   onDeleteSubcategory,
   onEditSubcategory,
-  onAddTransaction,
-  onEditTransaction,
-  onDeleteTransaction
+  onAddTransaction
 }) => {
   return (
-    <div className="rounded-lg border border-gray-200">
-      <div className="p-3 hover:bg-gray-50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center cursor-pointer" onClick={onToggle}>
-            {isExpanded ? (
-              <ChevronDown className="w-5 h-5 mr-2" />
-            ) : (
-              <ChevronRight className="w-5 h-5 mr-2" />
-            )}
-            <span className="font-medium">{categoryName}</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-gray-500">Budget: ${categoryData.budget}</span>
-            <CategoryActions
-              onAddSubcategory={() => onAddSubcategory(categoryData.id)}
-              onDeleteCategory={() => onDeleteCategory(categoryData.id)}
-            />
-          </div>
+    <div className="border rounded-lg bg-white shadow-sm">
+      <div 
+        className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-2">
+          {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+          <span className="font-medium">{categoryName}</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-gray-600">Budget: ${categoryData.budget}</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={onAddSubcategory}>
+                Add Subcategory
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={onDeleteCategory}
+                className="text-red-600"
+              >
+                Delete Category
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
       {isExpanded && (
-        <SubcategoryList
-          items={categoryData.items}
-          categoryName={categoryName}
-          onDeleteSubcategory={onDeleteSubcategory}
-          onEditSubcategory={onEditSubcategory}
-          onAddTransaction={onAddTransaction}
-          onDeleteTransaction={onDeleteTransaction}
-          onEditTransaction={onEditTransaction}
-        />
+        <div className="border-t bg-gray-50">
+          {categoryData.items.map((item) => (
+            <SubcategoryItem
+              key={item.name}
+              item={item}
+              onEdit={onEditSubcategory}
+              onDelete={onDeleteSubcategory}
+              onAddTransaction={onAddTransaction}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -120,7 +127,7 @@ const CategoryActions = ({ onAddSubcategory, onDeleteCategory, categoryId }) => 
   );
 };
 
-const SubcategoryList = ({ items, categoryName, onDeleteSubcategory, onAddTransaction, onEditSubcategory}) => (
+const SubcategoryList = ({ items, categoryName, onDeleteSubcategory, onAddTransaction, onEditSubcategory }) => (
   <div className="border-t border-gray-200">
     {items.map((item) => (
       <SubcategoryItem
@@ -145,6 +152,16 @@ const SubcategoryItem = ({
 }) => {
   const [showTransactions, setShowTransactions] = useState(false);
   console.log('subcategory data:', item);
+
+  const handleEditTransaction = (transaction) => {
+    console.log('Edit transaction:', transaction);
+    // Call your edit function
+  };
+
+  const handleDeleteTransaction = (transactionId) => {
+    console.log('Delete transaction:', transactionId);
+    // Call your delete function
+  };
 
   return (
     <div className="p-3 pl-10">
@@ -187,8 +204,8 @@ const SubcategoryItem = ({
         <TransactionList
           subcategory={item}
           onAddTransaction={onAddTransaction}
-          onEditTransaction={onEditTransaction}
-          onDeleteTransaction={onDeleteTransaction}
+          onEditTransaction={handleEditTransaction}
+          onDeleteTransaction={handleDeleteTransaction}
         />
       )}
     </div>
