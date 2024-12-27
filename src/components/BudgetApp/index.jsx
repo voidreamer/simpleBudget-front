@@ -16,22 +16,7 @@ const BudgetApp = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editingSubcategory, setEditingSubcategory] = useState(null);
   const [addingTransactionTo, setAddingTransactionTo] = useState(null);
-  const [categories, setCategories] = useState({
-    'Fixed Expenses': {
-      budget: 1000,
-      items: [
-        { name: 'Rent', allotted: 800, spending: 800 },
-        { name: 'Utilities', allotted: 200, spending: 180 },
-      ]
-    },
-    'Necessities': {
-      budget: 2500,
-      items: [
-        { name: 'Groceries', allotted: 600, spending: 545 },
-        { name: 'Transport', allotted: 200, spending: 180 },
-      ]
-    }
-  });
+  const [categories, setCategories] = useState({});
 
   // Business logic functions
   const toggleCategory = (category) => {
@@ -129,14 +114,15 @@ const BudgetApp = () => {
 
   const loadBudgetData = async (year, month) => {
       try {
-        console.log(`Loading budget data for ${year} ${month}`);
+        setIsLoading(true);
         const data = await budgetApi.fetchBudgetData(year, month);
-        console.log('Budget data:', data);
         if (data) {
           setCategories(data);
         }
       } catch (error) {
         console.error('Error loading budget data:', error);
+      } finally {
+        setIsLoading(false);
       }
   };
 
