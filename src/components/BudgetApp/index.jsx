@@ -267,9 +267,11 @@ const BudgetApp = () => {
                     ${totals.budget.toFixed(2)}
                   </p>
                 </div>
-                <div className="border rounded-lg p-4 bg-green-50">
+                <div className={`border rounded-lg p-4 ${totals.spending > totals.budget ? 'bg-red-50' : 'bg-green-50'
+                  }`}>
                   <h3 className="text-sm text-gray-600">Total Spending</h3>
-                  <p className="text-2xl font-bold text-green-600">
+                  <p className={`text-2xl font-bold ${totals.spending > totals.budget ? 'text-red-600' : 'text-green-600'
+                    }`}>
                     ${totals.spending.toFixed(2)}
                   </p>
                 </div>
