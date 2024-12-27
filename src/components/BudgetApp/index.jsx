@@ -7,6 +7,7 @@ import CategoryModal from './CategoryModal';
 import EditSubcategoryModal from './EditSubcategoryModal';
 import LoadingState from './LoadingState';
 import TransactionModal from './TransactionModal';
+import EditTransactionModal from './EditTransactionModal';
 import { budgetApi } from '../../services/api';
 
 const BudgetApp = () => {
@@ -19,6 +20,7 @@ const BudgetApp = () => {
   const [addingTransactionTo, setAddingTransactionTo] = useState(null);
   const [categories, setCategories] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
   // Business logic functions
   const toggleCategory = (category) => {
@@ -35,97 +37,121 @@ const BudgetApp = () => {
   };
 
   const handleAddCategory = async (data) => {
-      try {
-        const response = await budgetApi.createCategory(data);
-        console.log('New category:', response); // Check if ID is returned
-        await loadBudgetData(selectedDate.split(' ')[1], selectedDate.split(' ')[0]);
-      } catch (error) {
-        console.error('Error adding category:', error);
-      }
-    };
+    try {
+      const response = await budgetApi.createCategory(data);
+      console.log('New category:', response); // Check if ID is returned
+      await loadBudgetData(selectedDate.split(' ')[1], selectedDate.split(' ')[0]);
+    } catch (error) {
+      console.error('Error adding category:', error);
+    }
+  };
 
   const handleDeleteCategory = async (categoryId) => {
     console.log('handleDeleteCategory called with ID:', categoryId);
     if (!categoryId) {
-        console.error('No category ID provided');
-        return;
+      console.error('No category ID provided');
+      return;
     }
     try {
-        await budgetApi.deleteCategory(categoryId);
-            const [month, year] = selectedDate.split(' ');
-            await loadBudgetData(year, month);
-        } catch (error) {
-        console.error('Error deleting category:', error);
+      await budgetApi.deleteCategory(categoryId);
+      const [month, year] = selectedDate.split(' ');
+      await loadBudgetData(year, month);
+    } catch (error) {
+      console.error('Error deleting category:', error);
     }
-    };
+  };
 
-    const handleAddSubcategory = async (data) => {
-        console.log('handleAddSubcategory :', selectedCategory?.id);
-        if (!selectedCategory?.id) return;
-        try {
-            const subcategoryData = {
-                name: data.name,
-                allotted: data.allotted,
-                category_id: selectedCategory.id
-            };
-            await budgetApi.createSubcategory(subcategoryData);
-            const [month, year] = selectedDate.split(' ');
-            await loadBudgetData(year, month);
-        } catch (error) {
-            console.error('Error adding subcategory:', error);
-        }
+  const handleAddSubcategory = async (data) => {
+    console.log('handleAddSubcategory :', selectedCategory?.id);
+    if (!selectedCategory?.id) return;
+    try {
+      const subcategoryData = {
+        name: data.name,
+        allotted: data.allotted,
+        category_id: selectedCategory.id
       };
+      await budgetApi.createSubcategory(subcategoryData);
+      const [month, year] = selectedDate.split(' ');
+      await loadBudgetData(year, month);
+    } catch (error) {
+      console.error('Error adding subcategory:', error);
+    }
+  };
 
-    const handleEditSubcategory = async (data) => {
-        console.log('Editing subcategory:', data); // Debug
-        if (!data?.id) return;
-        try {
-            await budgetApi.updateSubcategory(data.id, {
-                allotted: parseFloat(data.allotted),
-                spending: parseFloat(data.spending)
-            });
-            const [month, year] = selectedDate.split(' ');
-            await loadBudgetData(year, month);
-        } catch (error) {
-            console.error('Error updating subcategory:', error);
-        }
-    };
+  const handleEditSubcategory = async (data) => {
+    console.log('Editing subcategory:', data); // Debug
+    if (!data?.id) return;
+    try {
+      await budgetApi.updateSubcategory(data.id, {
+        allotted: parseFloat(data.allotted),
+        spending: parseFloat(data.spending)
+      });
+      const [month, year] = selectedDate.split(' ');
+      await loadBudgetData(year, month);
+    } catch (error) {
+      console.error('Error updating subcategory:', error);
+    }
+  };
 
-    const handleDeleteSubcategory = async (subcategoryId) => {
-      if (!subcategoryId) return;
-      try {
-        await budgetApi.deleteSubcategory(subcategoryId);
-        const [month, year] = selectedDate.split(' ');
-        await loadBudgetData(year, month);
-      } catch (error) {
-        console.error('Error deleting subcategory:', error);
-      }
-    };
+  const handleDeleteSubcategory = async (subcategoryId) => {
+    if (!subcategoryId) return;
+    try {
+      await budgetApi.deleteSubcategory(subcategoryId);
+      const [month, year] = selectedDate.split(' ');
+      await loadBudgetData(year, month);
+    } catch (error) {
+      console.error('Error deleting subcategory:', error);
+    }
+  };
 
-    const handleAddTransaction = async (data) => {
-        console.log('Transaction data:', data);
-      try {
-        await budgetApi.createTransaction(data);
-        const [month, year] = selectedDate.split(' ');
-        await loadBudgetData(year, month);
-        setAddingTransactionTo(null);
-      } catch (error) {
-        console.error('Error adding transaction:', error);
-      }
-    };
+  const handleAddTransaction = async (data) => {
+    console.log('Transaction data:', data);
+    try {
+      await budgetApi.createTransaction(data);
+      const [month, year] = selectedDate.split(' ');
+      await loadBudgetData(year, month);
+      setAddingTransactionTo(null);
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+    }
+  };
+
+  const handleEditTransaction = async (data) => {
+    try {
+      await budgetApi.updateTransaction(data.id, {
+        description: data.description,
+        amount: parseFloat(data.amount),
+        date: data.date
+      });
+      const [month, year] = selectedDate.split(' ');
+      await loadBudgetData(year, month);
+    } catch (error) {
+      console.error('Error updating transaction:', error);
+    }
+  };
+
+  const handleDeleteTransaction = async (transactionId) => {
+    try {
+      await budgetApi.deleteTransaction(transactionId);
+      const [month, year] = selectedDate.split(' ');
+      await loadBudgetData(year, month);
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+    }
+  };
 
   const loadBudgetData = async (year, month) => {
-      try {
-        setIsLoading(true);
-        const data = await budgetApi.fetchBudgetData(year, month);
-        if (data) {
-          setCategories(data);
-        }
-      } catch (error) {
-        console.error('Error loading budget data:', error);
-      } finally {
-        setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const data = await budgetApi.fetchBudgetData(year, month);
+      if (data) {
+        setCategories(data);
       }
+    } catch (error) {
+      console.error('Error loading budget data:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Transform data for chart
@@ -136,10 +162,10 @@ const BudgetApp = () => {
     Spending: data.items.reduce((sum, item) => sum + item.spending, 0),
   }));
 
-    useEffect(() => {
-      const [month, year] = selectedDate.split(' ');
-      loadBudgetData(year, month);
-    }, [selectedDate]);
+  useEffect(() => {
+    const [month, year] = selectedDate.split(' ');
+    loadBudgetData(year, month);
+  }, [selectedDate]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -162,6 +188,7 @@ const BudgetApp = () => {
               handleDeleteSubcategory={handleDeleteSubcategory}
               handleEditSubcategory={setEditingSubcategory}
               onAddTransaction={setAddingTransactionTo}
+              onEditTransaction={setEditingTransaction}
             />
             <ChartSection chartData={chartData} />
           </>
@@ -182,11 +209,17 @@ const BudgetApp = () => {
         onSubmit={handleEditSubcategory}
       />
       <TransactionModal
-          isOpen={!!addingTransactionTo}
-          onClose={() => setAddingTransactionTo(null)}
-          subcategory={addingTransactionTo}
-          onSubmit={handleAddTransaction}
-        />
+        isOpen={!!addingTransactionTo}
+        onClose={() => setAddingTransactionTo(null)}
+        subcategory={addingTransactionTo}
+        onSubmit={handleAddTransaction}
+      />
+      <EditTransactionModal
+        isOpen={!!editingTransaction}
+        onClose={() => setEditingTransaction(null)}
+        transaction={editingTransaction}
+        onSubmit={handleEditTransaction}
+      />
     </div>
   );
 };

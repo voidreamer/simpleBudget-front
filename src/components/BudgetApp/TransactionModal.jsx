@@ -7,15 +7,20 @@ const TransactionModal = ({ isOpen, onClose, subcategory, onSubmit }) => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
 
-    const handleSubmit = () => {
-      onSubmit({
-        amount: parseFloat(amount),
-        description,
-        subcategory_id: subcategory.id,
-        date: new Date().toISOString()
-      });
-      onClose();
-    };
+  const handleSubmit = () => {
+    onSubmit({
+      amount: parseFloat(amount),
+      description,
+      subcategory_id: subcategory.id,
+      date: new Date().toISOString()
+    });
+    onClose();
+  };
+  const handleClose = () => {
+    setAmount('');
+    setDescription('');
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen}>
@@ -32,11 +37,21 @@ const TransactionModal = ({ isOpen, onClose, subcategory, onSubmit }) => {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Description"
         />
-        <Button onClick={() => onSubmit({
-          amount: parseFloat(amount),
-          description,
-          subcategory_id: subcategory.id
-        })}>Add</Button>
+        <div className="flex justify-end space-x-2">
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button onClick={() => {
+            onSubmit({
+              amount: parseFloat(amount),
+              description,
+              subcategory_id: subcategory?.id
+            });
+            handleClose();
+          }}>
+            Add
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronRight, ChevronDown, Plus, MoreVertical } from 'lucide-react';
 import Button from '../ui/button.jsx';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '../ui/dropdown-menu.jsx';
+import TransactionList from './TransactionList.jsx';
 
 const CategoryList = ({
   categories,
@@ -25,7 +26,7 @@ const CategoryList = ({
               categoryData={categoryData}
               isExpanded={expandedCategories.includes(categoryName)}
               onToggle={() => toggleCategory(categoryName)}
-              onAddSubcategory={() => openModal('subcategory', {id:categoryData.id})}
+              onAddSubcategory={() => openModal('subcategory', { id: categoryData.id })}
               onDeleteCategory={() => handleDeleteCategory(categoryData.id)}
               onDeleteSubcategory={handleDeleteSubcategory}
               onEditSubcategory={handleEditSubcategory}
@@ -126,37 +127,66 @@ const SubcategoryList = ({ items, categoryName, onDeleteSubcategory, onEditSubca
   </div>
 );
 
-const SubcategoryItem = ({ item, categoryId, onDeleteSubcategory, onEditSubcategory, onAddTransaction}) => (
-  <div className="p-3 pl-10 hover:bg-gray-50 flex justify-between items-center">
-    <span>{item.name}</span>
-    <div className="flex items-center gap-4">
-      <span className="text-blue-600">${item.allotted}</span>
-      <span className={item.spending > item.allotted ? 'text-red-600' : 'text-green-600'}>
-        ${item.spending}
-      </span>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm">
-            <MoreVertical className="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-            <Button onClick={() => onAddTransaction(item)}>
-              Add Transaction
-            </Button>
-          <DropdownMenuItem onClick={() => onEditSubcategory({id: item.id, allotted: item.allotted, spending:item.spending})}>
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => onDeleteSubcategory(item.id)}
-            className="text-red-600"
+const SubcategoryItem = ({
+  item,
+  onAddTransaction,
+  onEditSubcategory,
+  onDeleteSubcategory,
+  onEditTransaction,
+  onDeleteTransaction,
+}) => {
+  const [showTransactions, setShowTransactions] = useState(false);
+
+  return (
+    <div className="p-3 pl-10">
+      <div className="flex justify-between items-center">
+        <div>
+          <span>{item.name}</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowTransactions(!showTransactions)}
           >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            {showTransactions ? 'Hide' : 'Show'} Transactions
+          </Button>
+        </div>
+        <div className="flex items-center gap-4">
+          <span>${item.allotted}</span>
+          <span>${item.spending}</span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <Button onClick={() => onAddTransaction(item)}>
+                Add Transaction
+              </Button>
+              <DropdownMenuItem onClick={() => onEditSubcategory({ id: item.id, allotted: item.allotted, spending: item.spending })}>
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onDeleteSubcategory(item.id)}
+                className="text-red-600"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      {showTransactions && (
+        <TransactionList
+          subcategory={item}
+          onAddTransaction={onAddTransaction}
+          onEditTransaction={onEditTransaction}
+          onDeleteTransaction={onDeleteTransaction}
+        />
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 export default CategoryList;

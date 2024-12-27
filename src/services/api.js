@@ -1,5 +1,6 @@
 // src/services/api.js
-const API_BASE_URL = 'https://simplebudget-app.onrender.com/api';
+//const API_BASE_URL = 'https://simplebudget-app.onrender.com/api';
+const API_BASE_URL = 'http://localhost:8000/api';
 
 export const budgetApi = {
   async fetchBudgetData(year, month) {
@@ -80,6 +81,28 @@ export const budgetApi = {
             subcategory_id: data.subcategory_id // Ensure this is included
         })
     });
+    return response.json();
+  },
+
+  async deleteTransaction(transactionId) {
+    const response = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
+      method: 'DELETE'
+    });
+    return response.json();
+  },
+
+  async updateTransaction(transactionId, data) {
+    console.log('Updating transaction:', transactionId, data);
+    const response = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    });
+    if (!response.ok) {
+        throw new Error('Failed to update transaction');
+    }
     return response.json();
   },
 
