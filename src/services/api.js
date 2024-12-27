@@ -1,4 +1,3 @@
-// src/services/api.js
 const API_BASE_URL = 'https://simplebudget-app.onrender.com/api';
 
 export const budgetApi = {
@@ -27,7 +26,8 @@ export const budgetApi = {
                 id: sub.id,
                 name: sub.name,
                 allotted: sub.allotted,
-                spending: sub.spending
+                spending: sub.spending,
+                transactions: sub.transactions || [] 
               }))
             };
           });

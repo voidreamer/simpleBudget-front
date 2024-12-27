@@ -12,7 +12,9 @@ const CategoryList = ({
   handleDeleteCategory,
   handleDeleteSubcategory,
   handleEditSubcategory,
-  onAddTransaction
+  onAddTransaction,
+  onEditTransaction,
+  onDeleteTransaction
 }) => {
   return (
     <div className="w-1/2 bg-white rounded-lg shadow">
@@ -31,6 +33,8 @@ const CategoryList = ({
               onDeleteSubcategory={handleDeleteSubcategory}
               onEditSubcategory={handleEditSubcategory}
               onAddTransaction={onAddTransaction}
+              onEditTransaction={onEditTransaction}
+              onDeleteTransaction={onDeleteTransaction}
             />
           ))}
         </div>
@@ -48,7 +52,9 @@ const CategoryItem = ({
   onDeleteCategory,
   onDeleteSubcategory,
   onEditSubcategory,
-  onAddTransaction
+  onAddTransaction,
+  onEditTransaction,
+  onDeleteTransaction
 }) => {
   return (
     <div className="rounded-lg border border-gray-200">
@@ -79,6 +85,8 @@ const CategoryItem = ({
           onDeleteSubcategory={onDeleteSubcategory}
           onEditSubcategory={onEditSubcategory}
           onAddTransaction={onAddTransaction}
+          onDeleteTransaction={onDeleteTransaction}
+          onEditTransaction={onEditTransaction}
         />
       )}
     </div>
@@ -112,16 +120,16 @@ const CategoryActions = ({ onAddSubcategory, onDeleteCategory, categoryId }) => 
   );
 };
 
-const SubcategoryList = ({ items, categoryName, onDeleteSubcategory, onEditSubcategory, onAddTransaction }) => (
+const SubcategoryList = ({ items, categoryName, onDeleteSubcategory, onAddTransaction, onEditSubcategory}) => (
   <div className="border-t border-gray-200">
     {items.map((item) => (
       <SubcategoryItem
         key={item.name}
         item={item}
+        onAddTransaction={onAddTransaction}
         categoryName={categoryName}
         onDeleteSubcategory={onDeleteSubcategory}
         onEditSubcategory={onEditSubcategory}
-        onAddTransaction={onAddTransaction}
       />
     ))}
   </div>
@@ -136,6 +144,7 @@ const SubcategoryItem = ({
   onDeleteTransaction,
 }) => {
   const [showTransactions, setShowTransactions] = useState(false);
+  console.log('subcategory data:', item);
 
   return (
     <div className="p-3 pl-10">
@@ -160,9 +169,6 @@ const SubcategoryItem = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <Button onClick={() => onAddTransaction(item)}>
-                Add Transaction
-              </Button>
               <DropdownMenuItem onClick={() => onEditSubcategory({ id: item.id, allotted: item.allotted, spending: item.spending })}>
                 Edit
               </DropdownMenuItem>

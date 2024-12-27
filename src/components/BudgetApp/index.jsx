@@ -18,9 +18,9 @@ const BudgetApp = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [editingSubcategory, setEditingSubcategory] = useState(null);
   const [addingTransactionTo, setAddingTransactionTo] = useState(null);
+  const [editingTransaction, setEditingTransaction] = useState(null);
   const [categories, setCategories] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [editingTransaction, setEditingTransaction] = useState(null);
 
   // Business logic functions
   const toggleCategory = (category) => {
@@ -189,6 +189,7 @@ const BudgetApp = () => {
               handleEditSubcategory={setEditingSubcategory}
               onAddTransaction={setAddingTransactionTo}
               onEditTransaction={setEditingTransaction}
+              onDeleteTransaction={handleDeleteTransaction}
             />
             <ChartSection chartData={chartData} />
           </>
