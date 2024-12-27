@@ -5,7 +5,7 @@ import ChartSection from './ChartSection';
 import Footer from './Footer';
 import CategoryModal from './CategoryModal';
 import EditSubcategoryModal from './EditSubcategoryModal';
-import LoadingState from './loadingState';
+import LoadingState from './LoadingState';
 import TransactionModal from './TransactionModal';
 import { budgetApi } from '../../services/api';
 
