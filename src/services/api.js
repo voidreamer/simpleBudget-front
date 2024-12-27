@@ -1,5 +1,5 @@
 // src/services/api.js
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'https://simplebudget-app.onrender.comocal:4000/api';
 
 export const budgetApi = {
   async fetchBudgetData(year, month) {
