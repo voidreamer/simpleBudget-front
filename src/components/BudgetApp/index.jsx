@@ -5,6 +5,7 @@ import ChartSection from './ChartSection';
 import Footer from './Footer';
 import CategoryModal from './CategoryModal';
 import EditSubcategoryModal from './EditSubcategoryModal';
+import LoadingState from './loadingState';
 import TransactionModal from './TransactionModal';
 import { budgetApi } from '../../services/api';
 
@@ -17,6 +18,7 @@ const BudgetApp = () => {
   const [editingSubcategory, setEditingSubcategory] = useState(null);
   const [addingTransactionTo, setAddingTransactionTo] = useState(null);
   const [categories, setCategories] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
   // Business logic functions
   const toggleCategory = (category) => {
@@ -147,17 +149,23 @@ const BudgetApp = () => {
         openModal={openModal}
       />
       <main className="flex-1 flex p-6 gap-6">
-        <CategoryList
-          categories={categories}
-          expandedCategories={expandedCategories}
-          toggleCategory={toggleCategory}
-          openModal={openModal}
-          handleDeleteCategory={handleDeleteCategory}
-          handleDeleteSubcategory={handleDeleteSubcategory}
-          handleEditSubcategory={setEditingSubcategory}
-          onAddTransaction={setAddingTransactionTo}
-        />
-        <ChartSection chartData={chartData} />
+        {isLoading ? (
+          <LoadingState />
+        ) : (
+          <>
+            <CategoryList
+              categories={categories}
+              expandedCategories={expandedCategories}
+              toggleCategory={toggleCategory}
+              openModal={openModal}
+              handleDeleteCategory={handleDeleteCategory}
+              handleDeleteSubcategory={handleDeleteSubcategory}
+              handleEditSubcategory={setEditingSubcategory}
+              onAddTransaction={setAddingTransactionTo}
+            />
+            <ChartSection chartData={chartData} />
+          </>
+        )}
       </main>
       <Footer categories={categories} />
       <CategoryModal
