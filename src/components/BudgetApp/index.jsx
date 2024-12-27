@@ -206,9 +206,11 @@ const BudgetApp = () => {
     )
   };
 
-
   return (
+
+
     <div className="flex flex-col h-screen">
+
       {/* Header */}
       <div className="border-b p-4 flex justify-between items-center">
         <h1 className="font-bold text-xl">Budget Dashboard</h1>
@@ -231,61 +233,68 @@ const BudgetApp = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 grid grid-cols-3 gap-6 p-6">
-        {/* Categories and Transactions List */}
-        <div className="col-span-2">
-          <div className="bg-white rounded-lg shadow">
-            <CategoryList
-              categories={categories}
-              expandedCategories={expandedCategories}
-              toggleCategory={toggleCategory}
-              openModal={openModal}
-              handleDeleteCategory={handleDeleteCategory}
-              handleDeleteSubcategory={handleDeleteSubcategory}
-              handleEditSubcategory={setEditingSubcategory}
-              onAddTransaction={setAddingTransactionTo}
-            />
+      <div className="flex-1 p-6">
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <LoadingState />
           </div>
-        </div>
+        ) : (
 
-        {/* Summary and Charts */}
-        <div className="space-y-4">
-          {/* Summary Cards */}
-          <div className="grid gap-4">
-            <div className="border rounded-lg p-4 bg-blue-50">
-              <h3 className="text-sm text-gray-600">Total Budget</h3>
-              <p className="text-2xl font-bold text-blue-600">
-                ${totals.budget.toFixed(2)}
-              </p>
+          <div className="flex-1 grid grid-cols-3 gap-6 p-6">
+            {/* Categories and Transactions List */}
+            <div className="col-span-2">
+              <div className="bg-white rounded-lg shadow">
+                <CategoryList
+                  categories={categories}
+                  expandedCategories={expandedCategories}
+                  toggleCategory={toggleCategory}
+                  openModal={openModal}
+                  handleDeleteCategory={handleDeleteCategory}
+                  handleDeleteSubcategory={handleDeleteSubcategory}
+                  handleEditSubcategory={setEditingSubcategory}
+                  onAddTransaction={setAddingTransactionTo}
+                />
+              </div>
             </div>
-            <div className={`border rounded-lg p-4 ${totals.spending > totals.budget ? 'bg-red-50' : 'bg-green-50'
-              }`}>
-              <h3 className="text-sm text-gray-600">Total Spending</h3>
-              <p className={`text-2xl font-bold ${totals.spending > totals.budget ? 'text-red-600' : 'text-green-600'
-                }`}>
-                ${totals.spending.toFixed(2)}
-              </p>
-            </div>
-          </div>
 
-          {/* Chart */}
-          <div className="border rounded-lg p-4 bg-white">
-            <h3 className="font-bold mb-4">Budget Overview</h3>
-            <div className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `$${value}`} />
-                  <Legend />
-                  <Bar dataKey="Budget" fill="#4ade80" />
-                  <Bar dataKey="Spending" fill="#fca5a5" />
-                </BarChart>
-              </ResponsiveContainer>
+            {/* Summary and Charts */}
+            <div className="space-y-4">
+              {/* Summary Cards */}
+              <div className="grid gap-4">
+                <div className="border rounded-lg p-4 bg-blue-50">
+                  <h3 className="text-sm text-gray-600">Total Budget</h3>
+                  <p className="text-2xl font-bold text-blue-600">
+                    ${totals.budget.toFixed(2)}
+                  </p>
+                </div>
+                <div className="border rounded-lg p-4 bg-green-50">
+                  <h3 className="text-sm text-gray-600">Total Spending</h3>
+                  <p className="text-2xl font-bold text-green-600">
+                    ${totals.spending.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Chart */}
+              <div className="border rounded-lg p-4 bg-white">
+                <h3 className="font-bold mb-4">Budget Overview</h3>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => `$${value}`} />
+                      <Legend />
+                      <Bar dataKey="Budget" fill="#4ade80" />
+                      <Bar dataKey="Spending" fill="#fca5a5" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <CategoryModal
