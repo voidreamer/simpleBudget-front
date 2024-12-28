@@ -17,11 +17,19 @@ export const useForm = (initialValues = {}) => {
     setErrors({});
   };
 
+  const setValue = (name, value) => {
+    setValues(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   return {
     values,
     errors,
     handleChange,
     reset,
+    setValue,
     setValues,
     setErrors
   };

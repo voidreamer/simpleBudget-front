@@ -12,13 +12,15 @@ const ACTIONS = {
   SET_EXPANDED_CATEGORIES: 'SET_EXPANDED_CATEGORIES',
   SET_SELECTED_DATE: 'SET_SELECTED_DATE',
   TOGGLE_CATEGORY: 'TOGGLE_CATEGORY',
-  SET_MODAL: 'SET_MODAL'
+  SET_MODAL: 'SET_MODAL',
+  SET_LOADING_STATE: 'SET_LOADING_STATE',
+  UPDATE_CATEGORIES: 'UPDATE_CATEGORIES'
 };
 
 // Initial state
 const initialState = {
   categories: {},
-  isLoading: false,
+  isLoading: true,
   error: null,
   expandedCategories: [],
   selectedDate: null,
@@ -26,6 +28,13 @@ const initialState = {
     isOpen: false,
     type: null,
     data: null
+  },
+  loadingStates: {
+    addingCategory: false,
+    addingSubcategory: false,
+    addingTransaction: null, // will store subcategory id
+    deletingTransaction: null, // will store transaction id
+    changingMonth: false
   }
 };
 
@@ -33,23 +42,38 @@ const initialState = {
 function budgetReducer(state, action) {
   switch (action.type) {
     case ACTIONS.SET_CATEGORIES:
-      return { 
-        ...state, 
-        categories: action.payload, 
-        isLoading: false 
+      return {
+        ...state,
+        categories: action.payload,
+        isLoading: false
       };
 
     case ACTIONS.SET_LOADING:
-      return { 
-        ...state, 
-        isLoading: action.payload 
+      return {
+        ...state,
+        isLoading: action.payload
+      };
+
+    case ACTIONS.SET_LOADING_STATE:
+      return {
+        ...state,
+        loadingStates: {
+          ...state.loadingStates,
+          [action.payload.type]: action.payload.id
+        }
+      };
+
+    case ACTIONS.UPDATE_CATEGORIES:
+      return {
+        ...state,
+        categories: action.payload
       };
 
     case ACTIONS.SET_ERROR:
-      return { 
-        ...state, 
-        error: action.payload, 
-        isLoading: false 
+      return {
+        ...state,
+        error: action.payload,
+        isLoading: false
       };
 
     case ACTIONS.SET_EXPANDED_CATEGORIES:
@@ -92,12 +116,36 @@ export function BudgetProvider({ children }) {
   const [state, dispatch] = useReducer(budgetReducer, initialState);
 
   const loadBudgetData = useCallback(async (year, month) => {
-    dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+    // Only show loading on initial load or month change
+    if (!state.categories || Object.keys(state.categories).length === 0) {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: true });
+    } else {
+      dispatch({
+        type: ACTIONS.SET_LOADING_STATE,
+        payload: { key: 'changingMonth', value: true }
+      });
+    }
+
     try {
       const data = await budgetApi.fetchBudgetData(year, month);
       dispatch({ type: ACTIONS.SET_CATEGORIES, payload: data });
     } catch (error) {
       dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
+    } finally {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
+      dispatch({
+        type: ACTIONS.SET_LOADING_STATE,
+        payload: { key: 'changingMonth', value: false }
+      });
+    }
+  }, []);
+
+  const silentlyUpdateData = useCallback(async (year, month) => {
+    try {
+      const data = await budgetApi.fetchBudgetData(year, month);
+      dispatch({ type: ACTIONS.UPDATE_CATEGORIES, payload: data });
+    } catch (error) {
+      console.error('Error updating data:', error);
     }
   }, []);
 
@@ -178,14 +226,25 @@ export function BudgetProvider({ children }) {
   }, [state.selectedDate, loadBudgetData]);
 
   const createTransaction = useCallback(async (data) => {
+    dispatch({
+      type: ACTIONS.SET_LOADING_STATE,
+      payload: { key: 'addingTransaction', value: data.subcategory_id }
+    });
+
     try {
       await budgetApi.createTransaction(data);
+      // Silently update data without full reload
       const [month, year] = state.selectedDate.split(' ');
-      await loadBudgetData(year, month);
+      await silentlyUpdateData(year, month);
     } catch (error) {
-      dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
+      console.error('Error creating transaction:', error);
+    } finally {
+      dispatch({
+        type: ACTIONS.SET_LOADING_STATE,
+        payload: { key: 'addingTransaction', value: null }
+      });
     }
-  }, [state.selectedDate, loadBudgetData]);
+  }, [state.selectedDate, silentlyUpdateData]);
 
   const updateTransaction = useCallback(async (id, data) => {
     try {
@@ -198,14 +257,24 @@ export function BudgetProvider({ children }) {
   }, [state.selectedDate, loadBudgetData]);
 
   const deleteTransaction = useCallback(async (id) => {
+    dispatch({ 
+      type: ACTIONS.SET_LOADING_STATE, 
+      payload: { key: 'deletingTransaction', value: id }
+    });
+
     try {
       await budgetApi.deleteTransaction(id);
       const [month, year] = state.selectedDate.split(' ');
-      await loadBudgetData(year, month);
+      await silentlyUpdateData(year, month);
     } catch (error) {
-      dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
+      console.error('Error deleting transaction:', error);
+    } finally {
+      dispatch({ 
+        type: ACTIONS.SET_LOADING_STATE, 
+        payload: { key: 'deletingTransaction', value: null }
+      });
     }
-  }, [state.selectedDate, loadBudgetData]);
+  }, [state.selectedDate, silentlyUpdateData]);
 
   const value = {
     state,
@@ -227,7 +296,7 @@ export function BudgetProvider({ children }) {
   };
 
   return (
-    <BudgetContext.Provider value={value}>
+    <BudgetContext.Provider value={value}>,
       {children}
     </BudgetContext.Provider>
   );

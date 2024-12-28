@@ -5,21 +5,32 @@ import { BarChart2, Clock, TrendingUp } from 'lucide-react';
 import CategoryList from './CategoryList';
 import BudgetOverview from './Charts/BudgetOverview';
 import { Button } from '../ui/button';
-import LoadingState from '../ui/LoadingState';
+import LoadingState, { LoadingSpinner } from '../ui/LoadingState';
 import BaseModal from '../modals/BaseModal';
 
 const BudgetDashboard = () => {
   const { state, actions } = useBudget();
-  const { categories, isLoading, modal } = state;
+  const { categories, isLoading, loadingStates, modal } = state;
   const [showGraph, setShowGraph] = useState(true);
   const [dates, setDates] = useState([]);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [loadStartTime, setLoadStartTime] = useState(Date.now());
 
   const getCurrentMonthYear = () => {
     const date = new Date();
     return `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
   };
 
-  // Generate last 12 months
+  // Only handle initial load
+  useEffect(() => {
+    if (isLoading && isInitialLoad) {
+      setLoadStartTime(Date.now());
+    } else if (!isLoading && isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [isLoading, isInitialLoad]);
+
+  // Generate last 12 months and trigger initial load
   useEffect(() => {
     const currentDate = new Date();
     const monthsList = [];
@@ -36,7 +47,20 @@ const BudgetDashboard = () => {
     }
   }, []);
 
-  if (isLoading) return <LoadingState />;
+  // Show loading state if no categories are loaded yet
+  if (!categories || Object.keys(categories).length === 0) {
+    const loadingTime = Math.floor((Date.now() - loadStartTime) / 1000);
+    return (
+      <LoadingState 
+        message="Starting up the budget server..."
+        subMessage={
+          loadingTime > 5 
+            ? "This might take up to 30 seconds on first load" 
+            : "Getting things ready..."
+        }
+      />
+    );
+  }
 
   return (
     <>
@@ -74,6 +98,7 @@ const BudgetDashboard = () => {
             value={state.selectedDate || ''}
             onChange={(e) => actions.setSelectedDate(e.target.value)}
             className="border rounded p-2 bg-white"
+            disabled={loadingStates?.changingMonth}
           >
             {dates.map(date => (
               <option key={date} value={date}>{date}</option>
@@ -82,7 +107,11 @@ const BudgetDashboard = () => {
           <Button
             onClick={() => actions.openModal('category')}
             className="bg-blue-500 hover:bg-blue-600 text-white"
+            disabled={loadingStates?.addingCategory}
           >
+            {loadingStates?.addingCategory ? (
+              <LoadingSpinner className="mr-2" />
+            ) : null}
             Add Category
           </Button>
         </div>
