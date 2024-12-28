@@ -1,4 +1,4 @@
-import BudgetApp from './components/BudgetApp/index.jsx'  // Note the full path
+import BudgetApp from './components/budget/BudgetApp' 
 
 function App() {
   return (
