@@ -3,44 +3,44 @@ const API_BASE_URL = 'https://simplebudget-app.onrender.com/api';
 
 export const budgetApi = {
   async fetchBudgetData(year, month) {
-      try {
-        console.log(`Fetching data for ${year}-${month}`); // Debug log
-        const response = await fetch(`${API_BASE_URL}/budget-summary/${year}/${month}`);
+    try {
+      console.log(`Fetching data for ${year}-${month}`); // Debug log
+      const response = await fetch(`${API_BASE_URL}/budget-summary/${year}/${month}`);
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Error response:', errorData); // Debug log
-          throw new Error(errorData.detail || 'Failed to fetch budget data');
-        }
-
-        const data = await response.json();
-        console.log('Raw API response:', data); // Debug log
-
-        // Transform API data to our frontend format
-        const transformedData = {};
-        if (Array.isArray(data)) {
-          data.forEach(category => {
-            transformedData[category.name] = {
-              id: category.id,
-              budget: category.budget,
-              items: category.subcategories.map(sub => ({
-                id: sub.id,
-                name: sub.name,
-                allotted: sub.allotted,
-                spending: sub.spending,
-                transactions: sub.transactions || [] 
-              }))
-            };
-          });
-        }
-
-        console.log('Transformed data:', transformedData); // Debug log
-        return transformedData;
-      } catch (error) {
-        console.error('Error fetching budget data:', error);
-        throw error;
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error response:', errorData); // Debug log
+        throw new Error(errorData.detail || 'Failed to fetch budget data');
       }
-    },
+
+      const data = await response.json();
+      console.log('Raw API response:', data); // Debug log
+
+      // Transform API data to our frontend format
+      const transformedData = {};
+      if (Array.isArray(data)) {
+        data.forEach(category => {
+          transformedData[category.name] = {
+            id: category.id,
+            budget: category.budget,
+            items: category.subcategories.map(sub => ({
+              id: sub.id,
+              name: sub.name,
+              allotted: sub.allotted,
+              spending: sub.spending,
+              transactions: sub.transactions || []
+            }))
+          };
+        });
+      }
+
+      console.log('Transformed data:', transformedData); // Debug log
+      return transformedData;
+    } catch (error) {
+      console.error('Error fetching budget data:', error);
+      throw error;
+    }
+  },
 
 
   async createCategory(data) {
@@ -73,35 +73,37 @@ export const budgetApi = {
   async createTransaction(data) {
     console.log('Creating transaction with:', data); // Debug
     const response = await fetch(`${API_BASE_URL}/transactions/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            description: data.description,
-            amount: data.amount,
-            subcategory_id: data.subcategory_id // Ensure this is included
-        })
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        description: data.description,
+        amount: data.amount,
+        subcategory_id: data.subcategory_id // Ensure this is included
+      })
     });
     return response.json();
   },
 
-  async deleteTransaction(transactionId) {
-    const response = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
-      method: 'DELETE'
-    });
-    return response.json();
-  },
-
-  async updateTransaction(transactionId, data) {
-    console.log('Updating transaction:', transactionId, data);
-    const response = await fetch(`${API_BASE_URL}/transactions/${transactionId}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
+  async updateTransaction(id, data) {
+    const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
     });
     if (!response.ok) {
-        throw new Error('Failed to update transaction');
+      throw new Error('Failed to update transaction');
+    }
+    return response.json();
+  },
+
+  async deleteTransaction(id) {
+    const response = await fetch(`${API_BASE_URL}/transactions/${id}`, {
+      method: 'DELETE'
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete transaction');
     }
     return response.json();
   },
@@ -139,5 +141,5 @@ export const budgetApi = {
     const result = await response.json();
     console.log('Update subcategory response:', result);
     return result;
- }
+  }
 };

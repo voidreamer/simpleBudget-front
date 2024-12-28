@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import Button from '../ui/button.jsx';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart2, Clock, TrendingUp } from 'lucide-react';
 import CategoryList from './CategoryList';
 import ChartSection from './ChartSection';
 import Footer from './Footer';
@@ -20,6 +12,7 @@ import LoadingState from './LoadingState';
 import TransactionModal from './TransactionModal';
 import EditTransactionModal from './EditTransactionModal';
 import { budgetApi } from '../../services/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog.jsx";
 
 const BudgetApp = () => {
   const [expandedCategories, setExpandedCategories] = useState(['Fixed Expenses']);
@@ -31,6 +24,7 @@ const BudgetApp = () => {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [categories, setCategories] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [showGraph, setShowGraph] = useState(false);
 
 
   const getCurrentMonthYear = () => {
@@ -134,13 +128,17 @@ const BudgetApp = () => {
     }
   };
 
-  const handleEditTransaction = async (data) => {
+  // index.jsx
+  const handleEditTransaction = async (transaction) => {
+    if (!transaction?.id) return;
     try {
-      await budgetApi.updateTransaction(data.id, {
-        description: data.description,
-        amount: parseFloat(data.amount),
-        date: data.date
+      await budgetApi.updateTransaction(transaction.id, {
+        description: transaction.description,
+        amount: parseFloat(transaction.amount),
+        date: transaction.date
       });
+
+      // Reload data after successful update
       const [month, year] = selectedDate.split(' ');
       await loadBudgetData(year, month);
     } catch (error) {
@@ -149,8 +147,11 @@ const BudgetApp = () => {
   };
 
   const handleDeleteTransaction = async (transactionId) => {
+    if (!transactionId) return;
     try {
       await budgetApi.deleteTransaction(transactionId);
+
+      // Reload data after successful deletion
       const [month, year] = selectedDate.split(' ');
       await loadBudgetData(year, month);
     } catch (error) {
@@ -207,40 +208,85 @@ const BudgetApp = () => {
   };
 
   return (
-
-
     <div className="flex flex-col h-screen">
-
-      {/* Header */}
-      <div className="border-b p-4 flex justify-between items-center">
-        <h1 className="font-bold text-xl">Budget Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <select
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="border rounded p-2"
-          >
-            {dates.map(date => (
-              <option key={date} value={date}>{date}</option>
-            ))}
-          </select>
-          <div className="flex gap-2">
-            <Button onClick={() => openModal('category')} className="bg-blue-500 text-white">
+      {/* Header with icons */}
+      <div className="border-b p-4">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="font-bold text-xl">Budget Dashboard</h1>
+          <div className="flex items-center gap-4">
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-10 h-10 rounded-full"
+                onClick={() => setShowGraph(prev => !prev)}
+              >
+                <BarChart2 className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-10 h-10 rounded-full"
+              >
+                <Clock className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-10 h-10 rounded-full"
+              >
+                <TrendingUp className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <div className="flex items-center gap-4">
+            <select
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="border rounded p-2 bg-white"
+            >
+              {dates.map(date => (
+                <option key={date} value={date}>{date}</option>
+              ))}
+            </select>
+            <Button
+              onClick={() => openModal('category')}
+              className="bg-blue-500 hover:bg-blue-600 text-white"
+            >
               Add Category
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 p-6">
+      {/* Main content */}
+      <div className="flex-1 p-4 sm:p-6">
         {isLoading ? (
           <div className="h-full flex items-center justify-center">
             <LoadingState />
           </div>
         ) : (
+          <div className="flex flex-col space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border rounded-lg p-4 bg-blue-50">
+                <h3 className="text-sm text-gray-600">Total Budget</h3>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">
+                  ${totals.budget.toFixed(2)}
+                </p>
+              </div>
+              <div className={`border rounded-lg p-4 ${totals.spending > totals.budget ? 'bg-red-50' : 'bg-green-50'
+                }`}>
+                <h3 className="text-sm text-gray-600">Total Spending</h3>
+                <p className={`text-xl sm:text-2xl font-bold ${totals.spending > totals.budget ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                  ${totals.spending.toFixed(2)}
+                </p>
+              </div>
+            </div>
 
-          <div className="flex-1 grid grid-cols-3 gap-6 p-6">
             {/* Categories and Transactions List */}
             <div className="col-span-2">
               <div className="bg-white rounded-lg shadow">
@@ -253,34 +299,19 @@ const BudgetApp = () => {
                   handleDeleteSubcategory={handleDeleteSubcategory}
                   handleEditSubcategory={setEditingSubcategory}
                   onAddTransaction={setAddingTransactionTo}
+                  onEditTransaction={setEditingTransaction}     // Add these
+                  onDeleteTransaction={handleDeleteTransaction}
                 />
               </div>
             </div>
 
-            {/* Summary and Charts */}
-            <div className="space-y-4">
-              {/* Summary Cards */}
-              <div className="grid gap-4">
-                <div className="border rounded-lg p-4 bg-blue-50">
-                  <h3 className="text-sm text-gray-600">Total Budget</h3>
-                  <p className="text-2xl font-bold text-blue-600">
-                    ${totals.budget.toFixed(2)}
-                  </p>
-                </div>
-                <div className={`border rounded-lg p-4 ${totals.spending > totals.budget ? 'bg-red-50' : 'bg-green-50'
-                  }`}>
-                  <h3 className="text-sm text-gray-600">Total Spending</h3>
-                  <p className={`text-2xl font-bold ${totals.spending > totals.budget ? 'text-red-600' : 'text-green-600'
-                    }`}>
-                    ${totals.spending.toFixed(2)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Chart */}
-              <div className="border rounded-lg p-4 bg-white">
-                <h3 className="font-bold mb-4">Budget Overview</h3>
-                <div className="h-[300px]">
+            {/* Graph Dialog */}
+            <Dialog open={showGraph} onOpenChange={setShowGraph}>
+              <DialogContent className="max-w-4xl">
+                <DialogHeader>
+                  <DialogTitle>Budget Overview</DialogTitle>
+                </DialogHeader>
+                <div className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={chartData}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -293,8 +324,8 @@ const BudgetApp = () => {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
-            </div>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </div>

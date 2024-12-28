@@ -12,7 +12,9 @@ const CategoryList = ({
   handleDeleteCategory,
   handleDeleteSubcategory,
   handleEditSubcategory,
-  onAddTransaction
+  onAddTransaction,
+  onEditTransaction,
+  onDeleteTransaction
 }) => {
   return (
     <div className="h-full">
@@ -32,6 +34,8 @@ const CategoryList = ({
             onDeleteSubcategory={handleDeleteSubcategory}
             onEditSubcategory={handleEditSubcategory}
             onAddTransaction={onAddTransaction}
+            onEditTransaction={onEditTransaction}
+            onDeleteTransaction={onDeleteTransaction}
           />
         ))}
       </div>
@@ -48,7 +52,9 @@ const CategoryItem = ({
   onDeleteCategory,
   onDeleteSubcategory,
   onEditSubcategory,
-  onAddTransaction
+  onAddTransaction,
+  onEditTransaction,
+  onDeleteTransaction
 }) => {
   return (
     <div className="border rounded-lg bg-white shadow-sm">
@@ -92,6 +98,8 @@ const CategoryItem = ({
               onEdit={onEditSubcategory}
               onDelete={onDeleteSubcategory}
               onAddTransaction={onAddTransaction}
+              onEditTransaction={onEditTransaction}
+              onDeleteTransaction={onDeleteTransaction}
             />
           ))}
         </div>
@@ -153,16 +161,6 @@ const SubcategoryItem = ({
   const [showTransactions, setShowTransactions] = useState(false);
   console.log('subcategory data:', item);
 
-  const handleEditTransaction = (transaction) => {
-    console.log('Edit transaction:', transaction);
-    // Call your edit function
-  };
-
-  const handleDeleteTransaction = (transactionId) => {
-    console.log('Delete transaction:', transactionId);
-    // Call your delete function
-  };
-
   return (
     <div className="p-3 pl-10">
       <div className="flex justify-between items-center">
@@ -204,8 +202,8 @@ const SubcategoryItem = ({
         <TransactionList
           subcategory={item}
           onAddTransaction={onAddTransaction}
-          onEditTransaction={handleEditTransaction}
-          onDeleteTransaction={handleDeleteTransaction}
+          onEditTransaction={onEditTransaction}
+          onDeleteTransaction={onDeleteTransaction}
         />
       )}
     </div>
