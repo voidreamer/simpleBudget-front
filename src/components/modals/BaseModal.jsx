@@ -21,6 +21,10 @@ const MODAL_CONFIGS = {
     title: 'Edit Transaction',
     component: TransactionForm
   },
+  'edit-category': {
+    title: 'Edit Category',
+    component: CategoryForm
+  },
   'edit-subcategory': {
     title: 'Edit Subcategory',
     component: CategoryForm

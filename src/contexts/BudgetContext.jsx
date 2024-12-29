@@ -116,27 +116,22 @@ export function BudgetProvider({ children }) {
   const [state, dispatch] = useReducer(budgetReducer, initialState);
 
   const loadBudgetData = useCallback(async (year, month) => {
-    // Only show loading on initial load or month change
-    if (!state.categories || Object.keys(state.categories).length === 0) {
-      dispatch({ type: ACTIONS.SET_LOADING, payload: true });
-    } else {
-      dispatch({
-        type: ACTIONS.SET_LOADING_STATE,
-        payload: { key: 'changingMonth', value: true }
-      });
-    }
-
     try {
+      dispatch({ type: ACTIONS.SET_LOADING, payload: true });
       const data = await budgetApi.fetchBudgetData(year, month);
-      dispatch({ type: ACTIONS.SET_CATEGORIES, payload: data });
-    } catch (error) {
-      dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
-    } finally {
-      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
+      // Always set categories, even if data is empty
       dispatch({
-        type: ACTIONS.SET_LOADING_STATE,
-        payload: { key: 'changingMonth', value: false }
+        type: ACTIONS.SET_CATEGORIES,
+        payload: data || {} // Ensure we at least set an empty object
       });
+    } catch (error) {
+      console.error('Error loading budget data:', error);
+      dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
+      // Reset categories to empty object on error
+      dispatch({ type: ACTIONS.SET_CATEGORIES, payload: {} });
+    } finally {
+      // Always turn off loading
+      dispatch({ type: ACTIONS.SET_LOADING, payload: false });
     }
   }, []);
 
@@ -182,6 +177,26 @@ export function BudgetProvider({ children }) {
       await loadBudgetData(year, month);
     } catch (error) {
       dispatch({ type: ACTIONS.SET_ERROR, payload: error.message });
+    }
+  }, [state.selectedDate, loadBudgetData]);
+
+  const editCategory = useCallback(async (categoryId, data) => {
+    try {
+      dispatch({
+        type: ACTIONS.SET_LOADING_STATE,
+        payload: { key: 'updatingCategory', value: categoryId }
+      });
+
+      await budgetApi.editCategory(categoryId, data);
+      const [month, year] = state.selectedDate.split(' ');
+      await loadBudgetData(year, month);
+    } catch (error) {
+      console.error('Error updating category:', error);
+    } finally {
+      dispatch({
+        type: ACTIONS.SET_LOADING_STATE,
+        payload: { key: 'updatingCategory', value: null }
+      });
     }
   }, [state.selectedDate, loadBudgetData]);
 
@@ -257,8 +272,8 @@ export function BudgetProvider({ children }) {
   }, [state.selectedDate, loadBudgetData]);
 
   const deleteTransaction = useCallback(async (id) => {
-    dispatch({ 
-      type: ACTIONS.SET_LOADING_STATE, 
+    dispatch({
+      type: ACTIONS.SET_LOADING_STATE,
       payload: { key: 'deletingTransaction', value: id }
     });
 
@@ -269,8 +284,8 @@ export function BudgetProvider({ children }) {
     } catch (error) {
       console.error('Error deleting transaction:', error);
     } finally {
-      dispatch({ 
-        type: ACTIONS.SET_LOADING_STATE, 
+      dispatch({
+        type: ACTIONS.SET_LOADING_STATE,
         payload: { key: 'deletingTransaction', value: null }
       });
     }
@@ -286,6 +301,7 @@ export function BudgetProvider({ children }) {
       closeModal,
       createCategory,
       deleteCategory,
+      editCategory,
       createSubcategory,
       updateSubcategory,
       deleteSubcategory,

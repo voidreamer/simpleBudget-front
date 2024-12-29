@@ -15,6 +15,7 @@ const BudgetDashboard = () => {
   const [dates, setDates] = useState([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [loadStartTime, setLoadStartTime] = useState(Date.now());
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
   const getCurrentMonthYear = () => {
     const date = new Date();
@@ -23,12 +24,10 @@ const BudgetDashboard = () => {
 
   // Only handle initial load
   useEffect(() => {
-    if (isLoading && isInitialLoad) {
-      setLoadStartTime(Date.now());
-    } else if (!isLoading && isInitialLoad) {
-      setIsInitialLoad(false);
+    if (!isLoading && !hasInitiallyLoaded) {
+      setHasInitiallyLoaded(true);
     }
-  }, [isLoading, isInitialLoad]);
+  }, [isLoading]);
 
   // Generate last 12 months and trigger initial load
   useEffect(() => {
@@ -47,15 +46,14 @@ const BudgetDashboard = () => {
     }
   }, []);
 
-  // Show loading state if no categories are loaded yet
-  if (!categories || Object.keys(categories).length === 0) {
+  if (isLoading && !hasInitiallyLoaded) {
     const loadingTime = Math.floor((Date.now() - loadStartTime) / 1000);
     return (
-      <LoadingState 
+      <LoadingState
         message="Starting up the budget server..."
         subMessage={
-          loadingTime > 5 
-            ? "This might take up to 30 seconds on first load" 
+          loadingTime > 5
+            ? "This might take up to 30 seconds on first load"
             : "Getting things ready..."
         }
       />
@@ -136,6 +134,14 @@ const BudgetDashboard = () => {
             case 'category':
               actions.createCategory({
                 ...data,
+                month: state.selectedDate.split(' ')[0],
+                year: state.selectedDate.split(' ')[1]
+              });
+              break;
+            case 'edit-category':
+              actions.editCategory(modal.data.id, {
+                name: data.name,
+                budget: parseFloat(data.budget),  
                 month: state.selectedDate.split(' ')[0],
                 year: state.selectedDate.split(' ')[1]
               });

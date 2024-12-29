@@ -14,6 +14,7 @@ const CategoryForm = ({ onSubmit, initialValues = {}, type = 'category' }) => {
     e.preventDefault();
     onSubmit({
       name: values.name,
+      budget: parseFloat(values.amount),
       [type === 'category' ? 'budget' : 'allotted']: parseFloat(values.amount)
     });
     reset();

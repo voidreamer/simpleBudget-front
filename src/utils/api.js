@@ -1,5 +1,5 @@
 const API_BASE_URL = 'https://simplebudget-app.onrender.com/api';
-// const API_BASE_URL = 'http://localhost:8001/api';
+//const API_BASE_URL = 'http://localhost:8001/api';
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -11,7 +11,7 @@ class ApiError extends Error {
 
 const handleResponse = async (response) => {
   const data = await response.json();
-  
+
   if (!response.ok) {
     throw new ApiError(
       data.detail || 'An error occurred',
@@ -19,39 +19,53 @@ const handleResponse = async (response) => {
       data
     );
   }
-  
+
   return data;
 };
 
-const transformBudgetData = (data) => {
-  const transformed = {};
-  if (Array.isArray(data)) {
-    data.forEach(category => {
-      transformed[category.name] = {
-        id: category.id,
-        budget: category.budget,
-        items: category.subcategories.map(sub => ({
-          id: sub.id,
-          name: sub.name,
-          allotted: sub.allotted,
-          spending: sub.spending,
-          transactions: sub.transactions || []
-        }))
-      };
-    });
-  }
-  return transformed;
-};
 
 export const budgetApi = {
   async fetchBudgetData(year, month) {
     try {
       const response = await fetch(`${API_BASE_URL}/budget-summary/${year}/${month}`);
-      const data = await handleResponse(response);
-      return transformBudgetData(data);
+
+      if (!response.ok) {
+        // If response is 404, return empty object instead of throwing
+        if (response.status === 404) {
+          return {};
+        }
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to fetch budget data');
+      }
+
+      const data = await response.json();
+
+      // Handle empty response
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return {};
+      }
+
+      // Transform API data to our frontend format
+      const transformedData = {};
+      data.forEach(category => {
+        transformedData[category.name] = {
+          id: category.id,
+          budget: category.budget,
+          items: category.subcategories.map(sub => ({
+            id: sub.id,
+            name: sub.name,
+            allotted: sub.allotted,
+            spending: sub.spending,
+            transactions: sub.transactions || []
+          }))
+        };
+      });
+
+      return transformedData;
     } catch (error) {
       console.error('Error fetching budget data:', error);
-      throw error;
+      // Return empty object instead of throwing
+      return {};
     }
   },
 
@@ -69,7 +83,25 @@ export const budgetApi = {
     );
     return handleResponse(response);
   },
-  
+
+  async editCategory(categoryId, data) {
+    const response = await fetch(`${API_BASE_URL}/categories/${categoryId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: data.name,
+        budget: data.budget
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Failed to update category');
+    }
+
+    return response.json();
+  },
+
   async deleteCategory(categoryId) {
     console.log('API: Deleting category:', categoryId);
     try {

@@ -1,4 +1,3 @@
-// components/budget/CategoryList/CategoryItem.jsx
 import React from 'react';
 import { ChevronDown, ChevronRight, MoreVertical } from 'lucide-react';
 import { Button } from '../../ui/button';
@@ -11,27 +10,17 @@ const CategoryItem = ({ categoryName, categoryData, isExpanded }) => {
   const { state, actions } = useBudget();
   const { loadingStates } = state;
 
-  const handleDelete = async () => {
-    try {
-      // Add console.log to debug
-      console.log('Deleting category:', categoryData.id);
-      await actions.deleteCategory(categoryData.id);
-    } catch (error) {
-      console.error('Error deleting category:', error);
-    }
-  };
-
   return (
     <div className="border rounded-lg shadow-sm bg-white overflow-visible">
       {/* Category Header */}
       <div className="p-4 bg-blue-50 border-b flex items-center justify-between">
         {/* Clickable area for expand/collapse */}
-        <div 
+        <div
           className="flex items-center gap-3 flex-1 cursor-pointer hover:bg-blue-100 rounded-md p-2 -ml-2"
           onClick={() => actions.toggleCategory(categoryName)}
         >
-          {isExpanded ? 
-            <ChevronDown className="w-5 h-5 text-blue-600" /> : 
+          {isExpanded ?
+            <ChevronDown className="w-5 h-5 text-blue-600" /> :
             <ChevronRight className="w-5 h-5 text-blue-600" />
           }
           <div>
@@ -49,15 +38,25 @@ const CategoryItem = ({ categoryName, categoryData, isExpanded }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem 
-                onClick={() => actions.openModal('subcategory', { 
-                  id: categoryData.id, 
-                  name: categoryName 
+              <DropdownMenuItem
+                onClick={() => actions.openModal('edit-category', {
+                  id: categoryData.id,
+                  name: categoryName,
+                  budget: categoryData.budget
+                })}
+              >
+                Edit Category
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => actions.openModal('subcategory', {
+                  id: categoryData.id,
+                  name: categoryName
                 })}
               >
                 Add Subcategory
               </DropdownMenuItem>
-              <DropdownMenuItem 
+
+              <DropdownMenuItem
                 onClick={() => actions.deleteCategory(categoryData.id)}
                 className="text-red-600"
               >

@@ -44,21 +44,6 @@ const SubcategoryItem = ({ item }) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => actions.openModal('transaction', { 
-                subcategory_id: item.id 
-              })}
-              disabled={loadingStates?.addingTransaction === item.id}
-            >
-              {loadingStates?.addingTransaction === item.id ? (
-                <LoadingSpinner size="sm" className="mr-2" />
-              ) : (
-                <Plus className="w-4 h-4 mr-2" />
-              )}
-              Add Transaction
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">

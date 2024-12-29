@@ -1,17 +1,17 @@
 // components/budget/TransactionIconSelect.jsx
 import React from 'react';
-import { 
-  ShoppingBasket, Coffee, Car, Home, Utensils, 
+import {
+  ShoppingBasket, Coffee, Car, Home, Utensils,
   Smartphone, ShoppingBag, Dumbbell, Plane, Bus,
   Wifi, Gamepad, Book, Music, Heart, Gift,
   CreditCard, DollarSign, Wrench, Scissors
 } from 'lucide-react';
 import { Button } from '../ui/button';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuTrigger,
-  DropdownMenuItem 
+  DropdownMenuItem
 } from '../ui/dropdown-menu';
 
 const TRANSACTION_ICONS = [
@@ -53,6 +53,7 @@ const TransactionIconSelect = ({ selectedIcon, onSelectIcon }) => {
             key={label}
             onClick={() => onSelectIcon(label)}
             className="p-2 cursor-pointer hover:bg-gray-100 rounded flex items-center justify-center"
+            style={{ zIndex: 50 }}
           >
             <Icon className="h-4 w-4" />
           </DropdownMenuItem>
