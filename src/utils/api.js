@@ -1,4 +1,5 @@
-const API_BASE_URL = 'https://simplebudget-app.onrender.com/api';
+//const API_BASE_URL = 'https://simplebudget-app.onrender.com/api';
+const API_BASE_URL = 'https://simple-budget-app-bay.vercel.app/api'
 //const API_BASE_URL = 'http://localhost:8001/api';
 
 class ApiError extends Error {
