@@ -1,10 +1,13 @@
-import BudgetApp from './components/budget/BudgetApp' 
+import BudgetApp from './components/budget/BudgetApp'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
-      <BudgetApp />
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-background">
+        <BudgetApp />
+      </div>
+    </ThemeProvider>
   )
 }
 
