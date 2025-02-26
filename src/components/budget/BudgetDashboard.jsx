@@ -63,39 +63,42 @@ const BudgetDashboard = () => {
   return (
     <>
       {/* Header */}
-      <div className="border-b p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="font-bold text-xl">Budget Dashboard</h1>
-          <div className="flex items-center gap-4">
+      <div className="border-b border-border p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+          <h1 className="font-bold text-2xl text-foreground">Financial Overview</h1>
+          <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="w-10 h-10 rounded-full"
+              className="w-10 h-10 rounded-full bg-background hover:bg-accent transition-colors"
               onClick={() => setShowGraph(prev => !prev)}
+              aria-label="Toggle graph view"
             >
-              <BarChart2 className="w-5 h-5" />
+              <BarChart2 className="w-5 h-5 text-foreground" />
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="w-10 h-10 rounded-full"
+              className="w-10 h-10 rounded-full bg-background hover:bg-accent transition-colors"
+              aria-label="View history"
             >
-              <Clock className="w-5 h-5" />
+              <Clock className="w-5 h-5 text-foreground" />
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               size="icon"
-              className="w-10 h-10 rounded-full"
+              className="w-10 h-10 rounded-full bg-background hover:bg-accent transition-colors"
+              aria-label="View trends"
             >
-              <TrendingUp className="w-5 h-5" />
+              <TrendingUp className="w-5 h-5 text-foreground" />
             </Button>
           </div>
         </div>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <select
             value={state.selectedDate || ''}
             onChange={(e) => actions.setSelectedDate(e.target.value)}
-            className="border rounded p-2 bg-white"
+            className="border border-input rounded-md p-2 bg-background text-foreground w-full sm:w-auto focus:ring-2 focus:ring-primary/50 outline-none transition"
             disabled={loadingStates?.changingMonth}
           >
             {dates.map(date => (
@@ -104,7 +107,7 @@ const BudgetDashboard = () => {
           </select>
           <Button
             onClick={() => actions.openModal('category')}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow transition-all w-full sm:w-auto"
             disabled={loadingStates?.addingCategory}
           >
             {loadingStates?.addingCategory ? (
@@ -116,10 +119,16 @@ const BudgetDashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-4 sm:p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CategoryList />
-          {showGraph && <BudgetOverview onClose={() => setShowGraph(false)} />}
+      <div className="flex-1 p-4 sm:p-6 overflow-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
+          <div className="bg-card rounded-lg shadow-sm border border-border p-4">
+            <CategoryList />
+          </div>
+          {showGraph && (
+            <div className="bg-card rounded-lg shadow-sm border border-border p-4">
+              <BudgetOverview onClose={() => setShowGraph(false)} />
+            </div>
+          )}
         </div>
       </div>
 
