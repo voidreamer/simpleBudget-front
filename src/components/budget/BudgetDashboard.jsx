@@ -147,12 +147,11 @@ const BudgetDashboard = () => {
                 year: state.selectedDate.split(' ')[1]
               });
               break;
-            case 'edit-category':
-              actions.editCategory(modal.data.id, {
-                name: data.name,
-                budget: parseFloat(data.budget),  
-                month: state.selectedDate.split(' ')[0],
-                year: state.selectedDate.split(' ')[1]
+              case 'edit-category':
+                  actions.editCategory(modal.data.id, {
+                      name: data.name,
+                      month: state.selectedDate.split(' ')[0],
+                      year: state.selectedDate.split(' ')[1]
               });
               break;
             case 'subcategory':

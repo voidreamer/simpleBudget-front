@@ -12,11 +12,15 @@ const CategoryForm = ({ onSubmit, initialValues = {}, type = 'category' }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({
-      name: values.name,
-      budget: parseFloat(values.amount),
-      [type === 'category' ? 'budget' : 'allotted']: parseFloat(values.amount)
-    });
+    onSubmit(
+      type === 'category'
+        ? { name: values.name,
+            budget: 0 }          // categories: *only* the name
+        : {                              // sub‑categories keep their amount
+            name: values.name,
+            allotted: parseFloat(values.amount)
+          }
+    );
     reset();
   };
 
@@ -30,7 +34,7 @@ const CategoryForm = ({ onSubmit, initialValues = {}, type = 'category' }) => {
           onChange={handleChange}
         />
       </div>
-      <div>
+      {/*<div>
         <Input
           name="amount"
           type="number"
@@ -38,7 +42,18 @@ const CategoryForm = ({ onSubmit, initialValues = {}, type = 'category' }) => {
           value={values.amount}
           onChange={handleChange}
         />
-      </div>
+      </div>*/}
+      {type !== 'category' && (
+        <div>
+          <Input
+            name="amount"
+            type="number"
+            placeholder="Allotted Amount"
+            value={values.amount}
+            onChange={handleChange}
+          />
+        </div>
+      )}
       <div className="flex justify-end space-x-2">
         <Button type="submit">Save</Button>
       </div>
