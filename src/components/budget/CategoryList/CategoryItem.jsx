@@ -25,7 +25,12 @@ const CategoryItem = ({ categoryName, categoryData, isExpanded }) => {
           }
           <div>
             <h3 className="font-semibold text-lg text-blue-900">{categoryName}</h3>
-            <p className="text-sm text-blue-600">Budget: ${categoryData.budget}</p>
+            <p className="text-sm text-blue-600">
+              Budget: $
+              {categoryData.items
+              ?.reduce((sum, sub) => sum + (sub.allotted ?? 0), 0)
+               .toFixed(2)}
+            </p>
           </div>
         </div>
 
@@ -40,9 +45,8 @@ const CategoryItem = ({ categoryName, categoryData, isExpanded }) => {
             <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuItem
                 onClick={() => actions.openModal('edit-category', {
-                  id: categoryData.id,
-                  name: categoryName,
-                  budget: categoryData.budget
+                    id: categoryData.id,
+                    name: categoryName
                 })}
               >
                 Edit Category
